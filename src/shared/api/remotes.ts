@@ -1,5 +1,5 @@
 import type { Equipment as _Equipment, Room as _Room, Reservation as _Reservation } from '_tosslib/server/types';
-import { http } from 'pages/http';
+import { http } from 'shared/api/http';
 
 export type Equipment = _Equipment;
 export type Room = _Room;
