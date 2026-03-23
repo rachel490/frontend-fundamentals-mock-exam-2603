@@ -1,11 +1,10 @@
 import { css } from '@emotion/react';
-import { Slot } from '@radix-ui/react-slot';
-import { ListRow, Spacing, Text } from '_tosslib/components';
+import { Button, Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { Room } from '_tosslib/server/types';
-import React, { useState } from 'react';
-import { EQUIPMENT_LABELS } from '../constants';
+import { useState } from 'react';
 import AvailableRoomItem from './AvailableRoomItem';
+import EmptyList from 'components/EmptyList';
 
 /**
  *
@@ -14,11 +13,19 @@ import AvailableRoomItem from './AvailableRoomItem';
 
 interface AvailableRoomListProps {
   availableRooms: Room[];
+  selectedRoomId: null | string;
+  onSelect: (roomId: string) => void;
+  handleBook: () => void;
+  isBooking?: boolean;
 }
 
-const AvailableRoomList = ({ availableRooms }: AvailableRoomListProps) => {
-  const [selectedId, setSelectedId] = useState<Room['id'] | null>(null);
-
+const AvailableRoomList = ({
+  availableRooms,
+  selectedRoomId,
+  onSelect,
+  handleBook,
+  isBooking,
+}: AvailableRoomListProps) => {
   return (
     <div
       css={css`
@@ -45,16 +52,7 @@ const AvailableRoomList = ({ availableRooms }: AvailableRoomListProps) => {
 
       {/* 리스트 */}
       {availableRooms.length === 0 ? (
-        <div
-          css={css`
-            padding: 40px 0;
-            text-align: center;
-            background: ${colors.grey50};
-            border-radius: 14px;
-          `}
-        >
-          <Text>조건에 맞는 회의실이 없습니다.</Text>
-        </div>
+        <EmptyList text="조건에 맞는 회의실이 없습니다." />
       ) : (
         <ul
           css={css`
@@ -64,19 +62,19 @@ const AvailableRoomList = ({ availableRooms }: AvailableRoomListProps) => {
           `}
         >
           {availableRooms.map(room => {
-            const isSelected = selectedId === room.id;
+            const isSelected = selectedRoomId === room.id;
 
             return (
-              <AvailableRoomItem
-                key={room.id}
-                room={room}
-                onSelect={() => setSelectedId(room.id)}
-                isSelected={isSelected}
-              />
+              <AvailableRoomItem key={room.id} room={room} onSelect={() => onSelect(room.id)} isSelected={isSelected} />
             );
           })}
         </ul>
       )}
+
+      <Spacing size={16} />
+      <Button display="full" onClick={handleBook} disabled={isBooking}>
+        {isBooking ? '예약 중' : '확정'}
+      </Button>
     </div>
   );
 };

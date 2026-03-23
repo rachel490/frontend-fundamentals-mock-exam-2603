@@ -8,22 +8,8 @@ import { getRooms, getReservations, createReservation } from 'pages/remotes';
 import axios from 'axios';
 import AvailableRoomList from 'features/room-booking/components/AvailableRoomList';
 import { Equipment, Room } from '_tosslib/server/types';
-import { ALL_EQUIPMENT, EQUIPMENT_LABELS } from 'features/room-booking/constants';
-
-const TIME_SLOTS: string[] = [];
-for (let h = 9; h <= 20; h++) {
-  TIME_SLOTS.push(`${String(h).padStart(2, '0')}:00`);
-  if (h < 20) {
-    TIME_SLOTS.push(`${String(h).padStart(2, '0')}:30`);
-  }
-}
-
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
+import { ALL_EQUIPMENT, EQUIPMENT_LABELS, TIME_SLOTS } from 'features/room-booking/constants';
+import { formatDate } from 'utils/date';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
@@ -484,7 +470,15 @@ export function RoomBookingPage() {
       <Spacing size={24} />
 
       {/* 예약 가능 회의실 목록 */}
-      {isFilterComplete && <AvailableRoomList availableRooms={availableRooms} />}
+      {isFilterComplete && (
+        <AvailableRoomList
+          availableRooms={availableRooms}
+          selectedRoomId={selectedRoomId}
+          onSelect={(id: string) => setSelectedRoomId(id)}
+          handleBook={handleBook}
+          isBooking={createMutation.isLoading}
+        />
+      )}
 
       <Spacing size={24} />
     </div>

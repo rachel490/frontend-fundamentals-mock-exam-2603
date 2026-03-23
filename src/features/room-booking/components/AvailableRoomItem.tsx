@@ -12,7 +12,6 @@ interface AvailableRoomItemProps {
 }
 
 const AvailableRoomItem = ({ room, onSelect, isSelected = false }: AvailableRoomItemProps) => {
-  console.log('isSelected',room.id, isSelected)
   return (
     <Slot
       key={room.id}
