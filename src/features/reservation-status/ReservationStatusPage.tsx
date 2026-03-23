@@ -1,56 +1,34 @@
 import { css } from '@emotion/react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Top, Spacing, Border, Button, Text, ListRow } from '_tosslib/components';
+import {  useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Top, Spacing, Border, Button, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { getRooms, getReservations, getMyReservations, cancelReservation, Reservation, Room } from 'shared/api/remotes';
+import { ReservationWithRoomName } from 'shared/api/remotes';
 import { formatDate, timeToMinutes } from 'shared/utils/date';
 import { EQUIPMENT_LABELS, HOUR_LABELS, TOTAL_MINUTES } from 'shared/constants/room-booking';
 import { reservationQueries } from 'shared/api/query-factory/reservation';
 import { roomQueries } from 'shared/api/query-factory/room';
+import MyReservationList from './components/MyReservationList';
 
 export default function ReservationStatusPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryClient = useQueryClient();
   const [date, setDate] = useState(formatDate(new Date()));
-
-  const locationState = location.state as { message?: string } | null;
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
-    locationState?.message ? { type: 'success', text: locationState.message } : null
-  );
-
-  useEffect(() => {
-    if (locationState?.message) {
-      window.history.replaceState({}, '');
-    }
-  }, [locationState]);
 
   const { data: rooms = [] } = useQuery({ ...roomQueries.list() });
   const { data: reservations = [] } = useQuery({ ...reservationQueries.list(date) });
   const { data: myReservationList = [] } = useQuery({ ...reservationQueries.myList() });
 
-  const cancelMutation = useMutation(cancelReservation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...reservationQueries.listKey()] });
-      queryClient.invalidateQueries({ queryKey: [...reservationQueries.myListKey()] });
-    },
-  });
-
-  const handleCancel = async (id: Reservation['id']) => {
-    try {
-      await cancelMutation.mutateAsync(id);
-      setMessage({ type: 'success', text: '예약이 취소되었습니다.' });
-    } catch {
-      setMessage({ type: 'error', text: '취소에 실패했습니다.' });
-    }
-  };
-
   const [activeReservation, setActiveReservation] = useState<string | null>(null);
 
-  const getRoomName = (roomId: Room['id']) => rooms.find(room => room.id === roomId)?.name ?? roomId;
-
+  const myReservationsWithRoomName: ReservationWithRoomName[] = useMemo(
+    () =>
+      myReservationList.map(reservation => ({
+        ...reservation,
+        roomName: rooms.find(room => room.id === reservation.roomId)?.name ?? reservation.roomId,
+      })),
+    [myReservationList, rooms]
+  );
   return (
     <div
       css={css`
@@ -298,122 +276,8 @@ export default function ReservationStatusPage() {
       <Border size={8} />
       <Spacing size={24} />
 
-      {/* 메시지 배너 */}
-      {message && (
-        <div
-          css={css`
-            padding: 0 24px;
-          `}
-        >
-          <div
-            css={css`
-              padding: 10px 14px;
-              border-radius: 10px;
-              background: ${message.type === 'success' ? colors.blue50 : colors.red50};
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            `}
-          >
-            <Text
-              typography="t7"
-              fontWeight="medium"
-              color={message.type === 'success' ? colors.blue600 : colors.red500}
-            >
-              {message.text}
-            </Text>
-          </div>
-          <Spacing size={12} />
-        </div>
-      )}
-
       {/* 내 예약 목록 */}
-      <div
-        css={css`
-          padding: 0 24px;
-        `}
-      >
-        <div
-          css={css`
-            display: flex;
-            align-items: baseline;
-            gap: 6px;
-          `}
-        >
-          <Text typography="t5" fontWeight="bold" color={colors.grey900}>
-            내 예약
-          </Text>
-          {myReservationList.length > 0 && (
-            <Text typography="t7" fontWeight="medium" color={colors.grey500}>
-              {myReservationList.length}건
-            </Text>
-          )}
-        </div>
-        <Spacing size={16} />
-
-        {myReservationList.length === 0 ? (
-          <div
-            css={css`
-              padding: 40px 0;
-              text-align: center;
-              background: ${colors.grey50};
-              border-radius: 14px;
-            `}
-          >
-            <Text typography="t6" color={colors.grey500}>
-              예약 내역이 없습니다.
-            </Text>
-          </div>
-        ) : (
-          <div
-            css={css`
-              display: flex;
-              flex-direction: column;
-              gap: 10px;
-            `}
-          >
-            {myReservationList.map(reservation => (
-              <div
-                key={reservation.id}
-                css={css`
-                  padding: 14px 16px;
-                  border-radius: 14px;
-                  background: ${colors.grey50};
-                  border: 1px solid ${colors.grey200};
-                `}
-              >
-                <ListRow
-                  contents={
-                    <ListRow.Text2Rows
-                      top={getRoomName(reservation.roomId)}
-                      topProps={{ typography: 't6', fontWeight: 'bold', color: colors.grey900 }}
-                      bottom={`${reservation.date} ${reservation.start}~${reservation.end} · ${
-                        reservation.attendees
-                      }명 · ${reservation.equipment.map(e => EQUIPMENT_LABELS[e]).join(', ') || '장비 없음'}`}
-                      bottomProps={{ typography: 't7', color: colors.grey600 }}
-                    />
-                  }
-                  right={
-                    <Button
-                      type="danger"
-                      style="weak"
-                      size="small"
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (window.confirm('정말 취소하시겠습니까?')) {
-                          handleCancel(reservation.id);
-                        }
-                      }}
-                    >
-                      취소
-                    </Button>
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <MyReservationList myReservations={myReservationsWithRoomName} />
 
       <Spacing size={24} />
       <Border size={8} />

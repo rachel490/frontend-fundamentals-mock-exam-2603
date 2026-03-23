@@ -4,6 +4,7 @@ import { http } from 'shared/api/http';
 export type Equipment = _Equipment;
 export type Room = _Room;
 export type Reservation = _Reservation;
+export type ReservationWithRoomName = Reservation & { roomName: Room['name'] };
 
 export function getRooms() {
   return http.get<Room[]>('/api/rooms');
