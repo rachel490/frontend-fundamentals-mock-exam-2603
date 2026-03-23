@@ -8,8 +8,10 @@ import { getRooms, getReservations, createReservation, Reservation, Equipment } 
 import axios from 'axios';
 import { formatDate } from 'shared/utils/date';
 import { ALL_EQUIPMENT, EQUIPMENT_LABELS, TIME_SLOTS } from 'shared/constants/room-booking';
+import { reservationQueries } from 'shared/api/query-factory/reservation';
+import { roomQueries } from 'shared/api/query-factory/room';
 
-export function RoomBookingPage() {
+export default function RoomBookingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,17 +41,13 @@ export function RoomBookingPage() {
     setSearchParams(params, { replace: true });
   }, [date, startTime, endTime, attendees, equipment, preferredFloor, setSearchParams]);
 
-  const { data: rooms = [] } = useQuery({ queryKey: ['rooms'], queryFn: getRooms });
-  const { data: reservations = [] } = useQuery({
-    queryKey: ['reservations', date],
-    queryFn: () => getReservations(date),
-    enabled: !!date,
-  });
+  const { data: rooms = [] } = useQuery({ ...roomQueries.list() });
+  const { data: reservations = [] } = useQuery({ ...reservationQueries.list(date) });
 
   const createMutation = useMutation(createReservation, {
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['reservations', variables.date] });
-      queryClient.invalidateQueries({ queryKey: ['myReservations'] });
+      queryClient.invalidateQueries({ queryKey: [...reservationQueries.listKey(), variables.date] });
+      queryClient.invalidateQueries({ queryKey: [...reservationQueries.myListKey()] });
     },
   });
 
