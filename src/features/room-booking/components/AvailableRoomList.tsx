@@ -2,9 +2,8 @@ import { css } from '@emotion/react';
 import { Button, Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { Room } from '_tosslib/server/types';
-import { useState } from 'react';
 import AvailableRoomItem from './AvailableRoomItem';
-import EmptyList from 'components/EmptyList';
+import EmptyList from 'shared/components/EmptyList';
 
 /**
  *

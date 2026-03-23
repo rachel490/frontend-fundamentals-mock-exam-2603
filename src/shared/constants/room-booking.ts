@@ -1,5 +1,5 @@
 import { Equipment } from '_tosslib/server/types';
-import { objectKeys } from 'utils/type';
+import { objectKeys } from 'shared/utils/type';
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {
   tv: 'TV',

@@ -27,17 +27,8 @@
     "paths": {
       "_tosslib/*": ["_tosslib/*"],
       "pages/*": ["pages/*"],
-      "containers/*": ["containers/*"],
-      "components/*": ["components/*"],
-      "sections/*": ["sections/*"],
-      "constants/*": ["constants/*"],
-      "models/*": ["models/*"],
-      "remotes/*": ["remotes/*"],
-      "styles/*": ["styles/*"],
-      "utils/*": ["utils/*"],
-      "hooks/*": ["hooks/*"],
-      "stores/*": ["stores/*"],
-      "features/*": ["features/*"]
+      "features/*": ["features/*"],
+      "shared/*": ["shared/*"]
     }
   },
   "include": ["src"],
