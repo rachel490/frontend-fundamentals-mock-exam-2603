@@ -38,7 +38,7 @@ function timeToMinutes(time: string): number {
   return (h - TIMELINE_START) * 60 + m;
 }
 
-export function ReservationStatusPage() {
+export default function ReservationStatusPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
