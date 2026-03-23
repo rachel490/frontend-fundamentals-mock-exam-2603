@@ -13,7 +13,7 @@ export function getReservations(date: Reservation['date']) {
   return http.get<Reservation[]>(`/api/reservations?date=${date}`);
 }
 
-export function createReservation(data: Reservation) {
+export function createReservation(data: Omit<Reservation, 'id'>) {
   return http.post<typeof data, { ok: boolean; reservation?: unknown; code?: string; message?: string }>(
     '/api/reservations',
     data
