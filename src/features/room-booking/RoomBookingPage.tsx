@@ -39,15 +39,17 @@ export function RoomBookingPage() {
     setSearchParams(params, { replace: true });
   }, [date, startTime, endTime, attendees, equipment, preferredFloor, setSearchParams]);
 
-  const { data: rooms = [] } = useQuery(['rooms'], getRooms);
-  const { data: reservations = [] } = useQuery(['reservations', date], () => getReservations(date), {
+  const { data: rooms = [] } = useQuery({ queryKey: ['rooms'], queryFn: getRooms });
+  const { data: reservations = [] } = useQuery({
+    queryKey: ['reservations', date],
+    queryFn: () => getReservations(date),
     enabled: !!date,
   });
 
-  const createMutation = useMutation((data: Omit<Reservation, 'id'>) => createReservation(data), {
+  const createMutation = useMutation(createReservation, {
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries(['reservations', variables.date]);
-      queryClient.invalidateQueries(['myReservations']);
+      queryClient.invalidateQueries({ queryKey: ['reservations', variables.date] });
+      queryClient.invalidateQueries({ queryKey: ['myReservations'] });
     },
   });
 
