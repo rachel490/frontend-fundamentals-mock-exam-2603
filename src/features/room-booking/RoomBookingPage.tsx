@@ -5,26 +5,14 @@ import { Top, Spacing, Border } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import AvailableRoomList from './components/AvailableRoomList';
 import BookingFilter from './components/BookingFilter';
+import useBookingFilter from './hooks/useBookingFilter';
 
 export default function RoomBookingPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { isFilterComplete } = useBookingFilter();
 
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const startTime = searchParams.get('startTime') || '';
-  const endTime = searchParams.get('endTime') || '';
-  const attendees = Number(searchParams.get('attendees')) || 1;
-
-  let validationError: string | null = null;
-  const hasTimeInputs = startTime !== '' && endTime !== '';
-  if (hasTimeInputs) {
-    if (endTime <= startTime) validationError = '종료 시간은 시작 시간보다 늦어야 합니다.';
-    else if (attendees < 1) validationError = '참석 인원은 1명 이상이어야 합니다.';
-  }
-
-  const isFilterComplete = hasTimeInputs && !validationError;
 
   return (
     <div

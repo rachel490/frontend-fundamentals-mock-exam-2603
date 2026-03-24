@@ -3,13 +3,13 @@ import { Button, Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import AvailableRoomItem from './AvailableRoomItem';
 import EmptyList from 'shared/components/EmptyList';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { formatDate } from 'shared/utils/date';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { roomQueries } from 'shared/api/query-factory/room';
-import { createReservation, Equipment } from 'shared/api/remotes';
+import { createReservation } from 'shared/api/remotes';
 import { reservationQueries } from 'shared/api/query-factory/reservation';
 import axios from 'axios';
+import useBookingFilter from '../hooks/useBookingFilter';
 
 /**
  *
@@ -27,16 +27,7 @@ const AvailableRoomList = ({
 }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const date = searchParams.get('date') || formatDate(new Date());
-  const startTime = searchParams.get('startTime') || '';
-  const endTime = searchParams.get('endTime') || '';
-  const attendees = Number(searchParams.get('attendees')) || 1;
-  const equipment = searchParams.get('equipment')
-    ? (searchParams.get('equipment')!.split(',').filter(Boolean) as Equipment[])
-    : [];
-  const preferredFloor = searchParams.get('floor') ? Number(searchParams.get('floor')) : null;
+  const { date, startTime, endTime, attendees, preferredFloor, equipment, isFilterComplete } = useBookingFilter();
 
   const { data: rooms = [] } = useQuery({ ...roomQueries.list() });
   const { data: reservations = [] } = useQuery({ ...reservationQueries.list(date) });
@@ -47,18 +38,6 @@ const AvailableRoomList = ({
       queryClient.invalidateQueries({ queryKey: [...reservationQueries.myListKey()] });
     },
   });
-
-  // 입력 검증
-  let validationError: string | null = null;
-  const hasTimeInputs = startTime !== '' && endTime !== '';
-  if (hasTimeInputs) {
-    if (endTime <= startTime) {
-      validationError = '종료 시간은 시작 시간보다 늦어야 합니다.';
-    } else if (attendees < 1) {
-      validationError = '참석 인원은 1명 이상이어야 합니다.';
-    }
-  }
-  const isFilterComplete = hasTimeInputs && !validationError;
 
   const availableRooms = isFilterComplete
     ? rooms

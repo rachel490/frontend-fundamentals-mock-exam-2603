@@ -3,10 +3,9 @@ import { Select, Spacing, Text, Top } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import Field from './Field';
 import { formatDate } from 'shared/utils/date';
-import { useSearchParams } from 'react-router-dom';
 import { ALL_EQUIPMENT, EQUIPMENT_LABELS, TIME_SLOTS } from 'shared/constants/room-booking';
 import { rooms } from '_tosslib/server/data/rooms';
-import { Equipment } from '_tosslib/server/types';
+import useBookingFilter from '../hooks/useBookingFilter';
 
 const BookingFilter = ({
   errorMessage,
@@ -17,31 +16,14 @@ const BookingFilter = ({
   setErrorMessage: (message: string | null) => void;
   setSelectedRoomId: (id: string | null) => void;
 }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const date = searchParams.get('date') || formatDate(new Date());
-  const startTime = searchParams.get('startTime') || '';
-  const endTime = searchParams.get('endTime') || '';
-  const attendees = Number(searchParams.get('attendees')) || 1;
-  const equipment = searchParams.get('equipment')
-    ? (searchParams.get('equipment')!.split(',').filter(Boolean) as Equipment[])
-    : [];
-  const preferredFloor = searchParams.get('floor') ? Number(searchParams.get('floor')) : null;
-
+  const { date, startTime, endTime, attendees, preferredFloor, equipment, validationError, updateFilter } =
+    useBookingFilter();
   const floors = [...new Set(rooms.map(room => room.floor))].sort((a, b) => a - b);
-
-  let validationError: string | null = null;
-  const hasTimeInputs = startTime !== '' && endTime !== '';
-  if (hasTimeInputs) {
-    if (endTime <= startTime) validationError = '종료 시간은 시작 시간보다 늦어야 합니다.';
-    else if (attendees < 1) validationError = '참석 인원은 1명 이상이어야 합니다.';
-  }
 
   const handleFilterChange = (key: string, value: string) => {
     setSelectedRoomId(null);
     setErrorMessage(null);
-    searchParams.set(key, value);
-    setSearchParams(searchParams);
+    updateFilter({ key, value });
   };
 
   return (
