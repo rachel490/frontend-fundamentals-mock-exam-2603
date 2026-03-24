@@ -19,6 +19,7 @@
     /* Linting */
     "strict": true,
     "noUnusedParameters": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
 
@@ -31,6 +32,6 @@
       "shared/*": ["shared/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "vitest.setup.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
