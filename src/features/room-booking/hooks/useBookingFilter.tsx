@@ -15,8 +15,15 @@ const useBookingFilter = () => {
   const preferredFloor = searchParams.get('floor') ? Number(searchParams.get('floor')) : null;
 
   const updateFilter = ({ key, value }: { key: string; value: string }) => {
-    searchParams.set(key, value);
-    setSearchParams(searchParams);
+    setSearchParams(prev => {
+      if (value === '') {
+        prev.delete(key);
+      } else {
+        prev.set(key, value);
+      }
+
+      return prev;
+    });
   };
 
   let validationError: string | null = null;

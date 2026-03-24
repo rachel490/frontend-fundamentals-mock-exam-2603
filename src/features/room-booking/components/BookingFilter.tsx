@@ -174,11 +174,7 @@ const BookingFilter = ({
             <Select
               aria-label="선호 층"
               value={preferredFloor ?? ''}
-              onChange={e => {
-                const value = e.target.value;
-                if (!value) return;
-                handleFilterChange('floor', value);
-              }}
+              onChange={e => handleFilterChange('floor', e.target.value)}
             >
               <option value="">전체</option>
               {floors.map(floor => (
