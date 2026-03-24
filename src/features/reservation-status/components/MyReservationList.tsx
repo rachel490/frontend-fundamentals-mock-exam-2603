@@ -5,11 +5,12 @@ import EmptyList from 'shared/components/EmptyList';
 import ReservationItem from './MyReservationItem';
 import { cancelReservation, Reservation, ReservationWithRoomName } from 'shared/api/remotes';
 import { useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { reservationQueries } from 'shared/api/query-factory/reservation';
+import { roomQueries } from 'shared/api/query-factory/room';
 
-const MyReservationList = ({ myReservations }: { myReservations: ReservationWithRoomName[] }) => {
+const MyReservationList = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
 
@@ -18,12 +19,24 @@ const MyReservationList = ({ myReservations }: { myReservations: ReservationWith
     locationState?.message ? { type: 'success', text: locationState.message } : null
   );
 
+  const { data: rooms = [] } = useQuery({ ...roomQueries.list() });
+  const { data: myReservations = [] } = useQuery({ ...reservationQueries.myList() });
+
   const cancelMutation = useMutation(cancelReservation, {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...reservationQueries.listKey()] });
       queryClient.invalidateQueries({ queryKey: [...reservationQueries.myListKey()] });
     },
   });
+
+  const myReservationsWithRoomName: ReservationWithRoomName[] = useMemo(
+    () =>
+      myReservations.map(reservation => ({
+        ...reservation,
+        roomName: rooms.find(room => room.id === reservation.roomId)?.name ?? reservation.roomId,
+      })),
+    [myReservations, rooms]
+  );
 
   const handleCancel = async (id: Reservation['id']) => {
     try {
@@ -86,15 +99,15 @@ const MyReservationList = ({ myReservations }: { myReservations: ReservationWith
           <Text typography="t5" fontWeight="bold" color={colors.grey900}>
             내 예약
           </Text>
-          {myReservations.length > 0 && (
+          {myReservationsWithRoomName.length > 0 && (
             <Text typography="t7" fontWeight="medium" color={colors.grey500}>
-              {myReservations.length}건
+              {myReservationsWithRoomName.length}건
             </Text>
           )}
         </div>
         <Spacing size={16} />
 
-        {myReservations.length === 0 ? (
+        {myReservationsWithRoomName.length === 0 ? (
           <EmptyList text="예약 내역이 없습니다." />
         ) : (
           <div
@@ -104,7 +117,7 @@ const MyReservationList = ({ myReservations }: { myReservations: ReservationWith
               gap: 10px;
             `}
           >
-            {myReservations.map(reservation => (
+            {myReservationsWithRoomName.map(reservation => (
               <ReservationItem key={reservation.id} reservation={reservation} onCancel={handleCancel} />
             ))}
           </div>
