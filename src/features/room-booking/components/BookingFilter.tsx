@@ -149,6 +149,7 @@ const BookingFilter = ({
               min={1}
               value={attendees}
               onChange={e => handleFilterChange('attendees', String(Math.max(1, Number(e.target.value))))}
+              aria-label="참석 인원"
               css={css`
                 box-sizing: border-box;
                 font-size: 16px;

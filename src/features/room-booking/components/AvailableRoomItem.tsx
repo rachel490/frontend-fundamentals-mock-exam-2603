@@ -1,5 +1,4 @@
 import { css } from '@emotion/react';
-import { Slot } from '@radix-ui/react-slot';
 import { ListRow, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { Room } from '_tosslib/server/types';
@@ -13,7 +12,7 @@ interface AvailableRoomItemProps {
 
 const AvailableRoomItem = ({ room, onSelect, isSelected = false }: AvailableRoomItemProps) => {
   return (
-    <Slot
+    <div
       key={room.id}
       onClick={onSelect}
       role="button"
@@ -50,7 +49,7 @@ const AvailableRoomItem = ({ room, onSelect, isSelected = false }: AvailableRoom
           ) : undefined
         }
       />
-    </Slot>
+    </div>
   );
 };
 
