@@ -3,7 +3,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { ListRow, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { Room } from '_tosslib/server/types';
-import { EQUIPMENT_LABELS } from '../constants';
+import { EQUIPMENT_LABELS } from 'shared/constants/room-booking';
 
 interface AvailableRoomItemProps {
   room: Room;
